@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://skillshare-pro-backend-mznxiy3dx-ujjwals-projects-338a02fb.vercel.app/api",
+  baseURL: "https://skillshare-pro-backend-iqa7g7wad-ujjwals-projects-338a02fb.vercel.app/api",
 });
 
 
