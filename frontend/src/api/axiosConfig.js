@@ -1,11 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://skillshare-pro-backend-iqa7g7wad-ujjwals-projects-338a02fb.vercel.app/api",
+  baseURL: "https://skillshare-pro-backend.vercel.app/api",
 });
 
-
-// attach token automatically if present in localStorage
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

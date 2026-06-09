@@ -7,7 +7,7 @@ export default function InstructorDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   // Fetch instructor's created courses

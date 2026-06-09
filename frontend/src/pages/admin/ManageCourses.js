@@ -41,7 +41,7 @@ export default function ManageCourses() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
-      await api.delete(`/courses/${id}`, {
+      await api.delete(`/courses/admin/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setCourses(courses.filter((c) => c._id !== id));
