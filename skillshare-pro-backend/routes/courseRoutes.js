@@ -69,7 +69,7 @@ router.get("/my-courses", verifyToken, verifyUser, async (req, res) => {
   try {
     const courses = await Course.find({ studentsEnrolled: req.user.id })
       .populate("instructor", "name email")
-      .select("title description instructor createdAt");
+      .select("title description instructor resources createdAt");
 
     res.json({
       message: "Courses you are enrolled in",
@@ -102,7 +102,7 @@ router.get("/my-created-courses", verifyToken, verifyInstructor, async (req, res
   try {
     const courses = await Course.find({ instructor: req.user.id })
       .populate("studentsEnrolled", "name email")
-      .select("title description studentsEnrolled createdAt");
+      .select("title description studentsEnrolled resources createdAt");
 
     res.json({
       message: "Courses you have created",

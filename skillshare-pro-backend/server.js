@@ -6,19 +6,20 @@ import { verifyToken, verifyAdmin, verifyInstructor, verifyUser } from "./middle
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-
-
+import cloudinary from "./config/cloudinary.js";
+import pdfRoutes from "./routes/pdfRoutes.js";
+import geminiRoutes from "./routes/geminiRoutes.js";
 dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: "https://skillshare-frontend-nu.vercel.app",
+  origin: "http://localhost:3000",
   credentials: true,
 }));
 app.use(express.json());
 app.use("/api/admin", adminRoutes);
-
-
+app.use("/api/pdf", pdfRoutes);
+app.use("/api/gemini", geminiRoutes);
 // ✅ MongoDB Connection
 console.log("MONGO URI EXISTS:", !!process.env.MONGO_URI);
 mongoose
@@ -75,4 +76,5 @@ app.get("/api/student/dashboard", verifyToken, verifyUser, (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+console.log("Cloudinary Configured:", !!cloudinary.config().cloud_name);
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
