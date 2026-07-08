@@ -7,8 +7,11 @@ export default function AllCourses({ searchTerm = "" }) {
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
 
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [askingCourse, setAskingCourse] = useState(null);
+
   useEffect(() => {
-    // decode token to get user info
     const token = localStorage.getItem("token");
     if (token) {
       try {
@@ -21,29 +24,86 @@ export default function AllCourses({ searchTerm = "" }) {
     }
   }, []);
 
+  const fetchCourses = async () => {
+    try {
+      const res = await api.get("/courses");
+      setCourses(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api
-      .get("/courses")
-      .then((res) => setCourses(res.data))
-      .catch((err) =>
-        setError(err.response?.data?.message || err.message)
-      )
-      .finally(() => setLoading(false));
+    fetchCourses();
   }, []);
 
   const handleEnroll = async (courseId) => {
     try {
       const token = localStorage.getItem("token");
+
       if (!token) return alert("Please log in first");
 
-      // ✅ correct route
-      await api.post(`/courses/${courseId}/enroll`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post(
+        `/courses/${courseId}/enroll`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       alert("Successfully enrolled!");
+      fetchCourses();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to enroll");
+    }
+  };
+
+  const handleUnenroll = async (courseId) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await api.post(
+        `/courses/${courseId}/unenroll`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Successfully unenrolled!");
+      fetchCourses();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to unenroll");
+    }
+  };
+
+  const handleAskAI = async (courseId) => {
+    try {
+      if (!question.trim()) {
+        alert("Please enter a question.");
+        return;
+      }
+
+      setAskingCourse(courseId);
+      setAnswer("Thinking...");
+
+      const res = await api.post("/gemini/ask", {
+        courseId,
+        resourceIndex: 0,
+        question,
+      });
+
+      setAnswer(res.data.answer);
+    } catch (err) {
+      setAnswer(err.response?.data?.message || "AI failed");
+    } finally {
+      setAskingCourse(null);
     }
   };
 
@@ -56,11 +116,17 @@ export default function AllCourses({ searchTerm = "" }) {
 
   const getCardColor = (id) => {
     const colors = [
-      "#fee2e2", "#fef3c7", "#dcfce7", "#dbeafe",
-      "#ede9fe", "#fce7f3", "#cffafe", "#f3e8ff"
+      "#fee2e2",
+      "#fef3c7",
+      "#dcfce7",
+      "#dbeafe",
+      "#ede9fe",
+      "#fce7f3",
+      "#cffafe",
+      "#f3e8ff",
     ];
-    const index = id.charCodeAt(id.length - 1) % colors.length;
-    return colors[index];
+
+    return colors[id.charCodeAt(id.length - 1) % colors.length];
   };
 
   return (
@@ -71,58 +137,185 @@ export default function AllCourses({ searchTerm = "" }) {
         padding: "40px 20px",
       }}
     >
-      <h2 style={{ textAlign: "center", marginBottom: 30 }}>All Courses</h2>
+      <h2 style={{ textAlign: "center", marginBottom: 30 }}>
+        All Courses
+      </h2>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
           gap: "20px",
-          maxWidth: "1000px",
+          maxWidth: "1100px",
           margin: "0 auto",
         }}
       >
         {filteredCourses.length > 0 ? (
-          filteredCourses.map((c) => (
-            <div
-              key={c._id}
-              style={{
-                background: getCardColor(c._id),
-                borderRadius: "10px",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                padding: "20px",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-            >
-              <h3 style={{ marginBottom: 8, color: "#1e293b" }}>{c.title}</h3>
-              <p style={{ fontSize: 14, color: "#555", marginBottom: 12 }}>
-                {c.description?.slice(0, 80)}...
-              </p>
-              <div style={{ fontSize: 12, color: "#475569", marginBottom: 12 }}>
-                Instructor: {c.instructor?.name || c.instructor?.email || "Unknown"}
-              </div>
+          filteredCourses.map((c) => {
+            const isEnrolled =
+              user && c.studentsEnrolled?.includes(user.id);
 
-              {user?.role === "user" && (
-                <button
-                  onClick={() => handleEnroll(c._id)}
+            return (
+              <div
+                key={c._id}
+                style={{
+                  background: getCardColor(c._id),
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                  padding: "20px",
+                }}
+              >
+                <h3>{c.title}</h3>
+
+                <p>{c.description}</p>
+
+                <div
                   style={{
-                    background: "#2563eb",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
+                    fontSize: 13,
+                    color: "#555",
+                    marginBottom: 10,
                   }}
                 >
-                  Enroll
-                </button>
-              )}
-            </div>
-          ))
+                  Instructor:{" "}
+                  {c.instructor?.name ||
+                    c.instructor?.email ||
+                    "Unknown"}
+                </div>
+
+                {!isEnrolled ? (
+                  <>
+                    <p
+                      style={{
+                        color: "#666",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      🔒 Resources available after enrollment.
+                    </p>
+
+                    {user?.role === "user" && (
+                      <button
+                        onClick={() => handleEnroll(c._id)}
+                        style={{
+                          background: "#2563eb",
+                          color: "white",
+                          border: "none",
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Enroll
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p
+                      style={{
+                        color: "green",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ✅ Enrolled
+                    </p>
+
+                    <h4>Resources</h4>
+
+                    {c.resources?.length > 0 ? (
+                      <ul>
+                        {c.resources.map((resource, index) => (
+                          <li key={index}>
+                            <a
+                              href={resource.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {resource.fileName}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No resources uploaded yet.</p>
+                    )}
+
+                    {c.resources?.length > 0 && (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Ask AI about this PDF..."
+                          value={askingCourse === c._id ? question : ""}
+                          onChange={(e) => {
+                            setQuestion(e.target.value);
+                            setAskingCourse(c._id);
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            marginTop: "10px",
+                            marginBottom: "10px",
+                            borderRadius: "6px",
+                            border: "1px solid #ccc",
+                          }}
+                        />
+
+                        <button
+                          onClick={() => handleAskAI(c._id)}
+                          style={{
+                            background: "#2563eb",
+                            color: "white",
+                            border: "none",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          💬 Ask AI
+                        </button>
+
+                        {askingCourse === c._id && answer && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              background: "#fff",
+                              padding: "10px",
+                              borderRadius: "6px",
+                              whiteSpace: "pre-wrap",
+                              border: "1px solid #ddd",
+                            }}
+                          >
+                            <strong>AI:</strong>
+                            <br />
+                            {answer}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <br />
+
+                    <button
+                      onClick={() => handleUnenroll(c._id)}
+                      style={{
+                        marginTop: 12,
+                        background: "#dc2626",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Unenroll
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })
         ) : (
-          <p style={{ textAlign: "center" }}>No courses found.</p>
+          <p>No courses found.</p>
         )}
       </div>
     </div>

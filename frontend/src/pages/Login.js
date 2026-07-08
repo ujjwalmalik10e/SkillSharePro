@@ -13,6 +13,10 @@ export default function Login({ setUser }) {
     e.preventDefault();
     try {
       const res = await api.post("/auth/login", { email, password });
+      
+      console.log(res.data);
+
+      localStorage.setItem("token", res.data.token);
       localStorage.setItem("token", res.data.token);
 
       // decode token to update App.js user state

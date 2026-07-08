@@ -102,7 +102,25 @@ export default function MyCourses() {
                 <div style={{ fontSize: 12, color: "#475569", marginTop: 8 }}>
                   Instructor: {c.instructor?.name || c.instructor?.email || "Unknown"}
                 </div>
+                <h4 style={{ marginTop: 15 }}>Resources</h4>
 
+                {!c.resources || c.resources.length === 0 ? (
+                  <p>No resources available.</p>
+                ) : (
+                  <ul>
+                    {c.resources.map((resource, index) => (
+                      <li key={index}>
+                        <a
+                          href={resource.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {resource.fileName}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <button
                   onClick={() => handleUnenroll(c._id)}
                   style={{

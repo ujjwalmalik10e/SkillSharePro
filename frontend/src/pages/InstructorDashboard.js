@@ -9,7 +9,7 @@ export default function InstructorDashboard() {
   const [description, setDescription] = useState("");
   const [, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
+  const [selectedFiles, setSelectedFiles] = useState({});
   // Fetch instructor's created courses
   const fetchCourses = async () => {
     try {
@@ -31,6 +31,30 @@ export default function InstructorDashboard() {
   } catch (err) {
     console.error(err);
     alert("Failed to delete course");
+  }
+};
+const handlePdfUpload = async (courseId) => {
+  try {
+    const file = selectedFiles[courseId];
+
+    if (!file) {
+      alert("Please select a PDF first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    const res = await api.post(
+      `/pdf/upload/${courseId}`,
+      formData
+    );
+
+    alert(res.data.message);
+    fetchCourses();
+  } catch (err) {
+    console.error(err);
+    alert("Upload failed");
   }
 };
   useEffect(() => {
@@ -186,7 +210,39 @@ export default function InstructorDashboard() {
             <p style={{ color: "#333", marginBottom: "12px" }}>
               {course.description}
             </p>
-            
+            <input
+              
+              type="file"
+              accept=".pdf"
+              onChange={(e) =>
+                setSelectedFiles((prev) => ({
+                  ...prev,
+                  [course._id]: e.target.files[0],
+                }))
+              }
+            />
+            <button onClick={() => handlePdfUpload(course._id)}>
+              Upload PDF
+            </button>
+            <h4>Resources</h4>
+
+            {!course.resources || course.resources.length === 0 ? (
+              <p>No resources uploaded.</p>
+            ) : (
+              <ul>
+                {course.resources.map((resource, index) => (
+                  <li key={index}>
+                    <a
+                      href={resource.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {resource.fileName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
             <h4 style={{ color: "#0a2752ff", fontSize: "16px", marginBottom: "8px" }}>
               Enrolled Students:
             </h4>
