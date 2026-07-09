@@ -7,9 +7,9 @@ export default function AllCourses({ searchTerm = "" }) {
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
 
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [askingCourse, setAskingCourse] = useState(null);
+  const [questions, setQuestions] = useState({});
+const [answers, setAnswers] = useState({});
+const [loadingAI, setLoadingAI] = useState({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -83,29 +83,42 @@ export default function AllCourses({ searchTerm = "" }) {
     }
   };
 
-  const handleAskAI = async (courseId) => {
-    try {
-      if (!question.trim()) {
-        alert("Please enter a question.");
-        return;
-      }
+  const handleAskAI = async (courseId, resourceIndex) => {
+  const key = `${courseId}-${resourceIndex}`;
 
-      setAskingCourse(courseId);
-      setAnswer("Thinking...");
+  if (!questions[key]?.trim()) {
+    alert("Please enter a question.");
+    return;
+  }
 
-      const res = await api.post("/gemini/ask", {
-        courseId,
-        resourceIndex: 0,
-        question,
-      });
+  try {
+    setLoadingAI((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
 
-      setAnswer(res.data.answer);
-    } catch (err) {
-      setAnswer(err.response?.data?.message || "AI failed");
-    } finally {
-      setAskingCourse(null);
-    }
-  };
+    const res = await api.post("/gemini/ask", {
+      courseId,
+      resourceIndex,
+      question: questions[key],
+    });
+
+    setAnswers((prev) => ({
+      ...prev,
+      [key]: res.data.answer,
+    }));
+  } catch (err) {
+    setAnswers((prev) => ({
+      ...prev,
+      [key]: err.response?.data?.message || "AI failed",
+    }));
+  } finally {
+    setLoadingAI((prev) => ({
+      ...prev,
+      [key]: false,
+    }));
+  }
+};
 
   if (loading) return <div>Loading courses...</div>;
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
@@ -222,76 +235,94 @@ export default function AllCourses({ searchTerm = "" }) {
 
                     <h4>Resources</h4>
 
-                    {c.resources?.length > 0 ? (
-                      <ul>
-                        {c.resources.map((resource, index) => (
-                          <li key={index}>
-                            <a
-                              href={resource.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {resource.fileName}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>No resources uploaded yet.</p>
-                    )}
+                      {c.resources?.length > 0 ? (
+                        <div>
+                          {c.resources.map((resource, index) => {
+                            const key = `${c._id}-${index}`;
 
-                    {c.resources?.length > 0 && (
-                      <>
-                        <input
-                          type="text"
-                          placeholder="Ask AI about this PDF..."
-                          value={askingCourse === c._id ? question : ""}
-                          onChange={(e) => {
-                            setQuestion(e.target.value);
-                            setAskingCourse(c._id);
-                          }}
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginTop: "10px",
-                            marginBottom: "10px",
-                            borderRadius: "6px",
-                            border: "1px solid #ccc",
-                          }}
-                        />
+                            return (
+                              <div
+                                key={index}
+                                style={{
+                                  border: "1px solid #ddd",
+                                  borderRadius: "8px",
+                                  padding: "12px",
+                                  marginBottom: "12px",
+                                  background: "#fff",
+                                }}
+                              >
+                                <a
+                                  href={resource.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    display: "block",
+                                    marginBottom: "10px",
+                                    fontWeight: "bold",
+                                    textDecoration: "none",
+                                  }}
+                                >
+                                  📄 {resource.fileName}
+                                </a>
 
-                        <button
-                          onClick={() => handleAskAI(c._id)}
-                          style={{
-                            background: "#2563eb",
-                            color: "white",
-                            border: "none",
-                            padding: "8px 12px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          💬 Ask AI
-                        </button>
+                                <input
+                                  type="text"
+                                  placeholder="Ask AI about this PDF..."
+                                  value={questions[key] || ""}
+                                  onChange={(e) =>
+                                    setQuestions((prev) => ({
+                                      ...prev,
+                                      [key]: e.target.value,
+                                    }))
+                                  }
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px",
+                                    marginBottom: "10px",
+                                    borderRadius: "6px",
+                                    border: "1px solid #ccc",
+                                  }}
+                                />
 
-                        {askingCourse === c._id && answer && (
-                          <div
-                            style={{
-                              marginTop: "12px",
-                              background: "#fff",
-                              padding: "10px",
-                              borderRadius: "6px",
-                              whiteSpace: "pre-wrap",
-                              border: "1px solid #ddd",
-                            }}
-                          >
-                            <strong>AI:</strong>
-                            <br />
-                            {answer}
-                          </div>
-                        )}
-                      </>
-                    )}
+                                <button
+                                  onClick={() => handleAskAI(c._id, index)}
+                                  disabled={loadingAI[key]}
+                                  style={{
+                                    background: "#2563eb",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "8px 12px",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {loadingAI[key] ? "Thinking..." : "💬 Ask AI"}
+                                </button>
+
+                                {answers[key] && (
+                                  <div
+                                    style={{
+                                      marginTop: "12px",
+                                      background: "#f8fafc",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "6px",
+                                      padding: "10px",
+                                      whiteSpace: "pre-wrap",
+                                    }}
+                                  >
+                                    <strong>🤖 SkillShare AI</strong>
+                                    <hr />
+                                    {answers[key]}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p>No resources uploaded yet.</p>
+                      )}
+                            
 
                     <br />
 
