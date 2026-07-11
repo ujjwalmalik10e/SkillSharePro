@@ -127,20 +127,7 @@ const [loadingAI, setLoadingAI] = useState({});
     c.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getCardColor = (id) => {
-    const colors = [
-      "#fee2e2",
-      "#fef3c7",
-      "#dcfce7",
-      "#dbeafe",
-      "#ede9fe",
-      "#fce7f3",
-      "#cffafe",
-      "#f3e8ff",
-    ];
-
-    return colors[id.charCodeAt(id.length - 1) % colors.length];
-  };
+  
 
   return (
   <div className="courses-page">
