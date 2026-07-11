@@ -1,5 +1,11 @@
 // src/App.js
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import { useEffect, useState } from "react";
 import AllCourses from "./pages/AllCourses";
 import Login from "./pages/Login";
@@ -8,10 +14,15 @@ import InstructorDashboard from "./pages/InstructorDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageCourses from "./pages/admin/ManageCourses";
-
-function App() {
+import Home from "./pages/Home";
+import "./navbar.css";
+function AppContent() {
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
+const hideNavbar =
+  location.pathname === "/login" ||
+  location.pathname === "/register";
   // Load user from token on initial render
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,78 +45,63 @@ function App() {
   };
 
   return (
-    <Router>
+    <>
       {/* Navbar */}
-      <nav
-        style={{
-          padding: "12px 20px",
-          borderBottom: "1px solid #ddd",
-          backgroundColor: "#0a2752ff",
-          color: "white",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
-          {user?.role === "admin" && (
-            <Link
-              to="/admin/dashboard"
-              style={{ marginRight: 15, color: "white", textDecoration: "none" }}
-            >
-              Admin Dashboard
+      {!hideNavbar && (
+  <div className="navbar-wrapper">
+    <nav className="main-navbar">
+      <Link to="/" className="navbar-brand">
+        <span className="navbar-logo">SS</span>
+        <span>SkillShare Pro</span>
+      </Link>
+
+      <div className="navbar-links">
+        <Link to="/">Home</Link>
+
+        <Link to="/courses">Courses</Link>
+        <a href="#contact" className="navbar-link">
+  Contact Us
+</a>
+        {user?.role === "instructor" && (
+          <Link to="/instructor">Instructor</Link>
+        )}
+
+        {user?.role === "admin" && (
+          <Link to="/admin/dashboard">Admin</Link>
+        )}
+      </div>
+
+      <div className="navbar-actions">
+        {!user ? (
+          <>
+            <Link to="/login" className="navbar-login">
+              Login
             </Link>
-          )}
 
-          <Link to="/" style={{ marginRight: 15, color: "white", textDecoration: "none" }}>
-            All Courses
-          </Link>
-
-          {user?.role === "instructor" && (
-            <Link to="/instructor" style={{ marginRight: 15, color: "white", textDecoration: "none" }}>
-              Instructor
+            <Link to="/register" className="navbar-register">
+              Get Started
             </Link>
-          )}
-
-          {!user && (
-            <>
-              <Link to="/login" style={{ marginRight: 15, color: "white", textDecoration: "none" }}>
-                Login
-              </Link>
-              <Link to="/register" style={{ marginRight: 15, color: "white", textDecoration: "none" }}>
-                Register
-              </Link>
-            </>
-          )}
-        </div>
-
-        <div>
-          {user && (
-            <span style={{ marginRight: 15 }}>
-              Role: <strong>{user.role}</strong>
+          </>
+        ) : (
+          <>
+            <span className="navbar-role">
+              {user.role}
             </span>
-          )}
-          {user && (
+
             <button
               onClick={handleLogout}
-              style={{
-                backgroundColor: "white",
-                color: "#0d6efd",
-                border: "none",
-                borderRadius: "4px",
-                padding: "6px 10px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
+              className="navbar-logout"
             >
               Logout
             </button>
-          )}
-        </div>
-      </nav>
-
+          </>
+        )}
+      </div>
+    </nav>
+  </div>
+)}
       {/* Page content */}
-      <div style={{ padding: 20 }}>
+      <div>
         {user && (
           <h2 style={{ color: "#333", marginBottom: "20px" }}>
             Hello, {user.name || user.email}
@@ -113,7 +109,8 @@ function App() {
         )}
 
         <Routes>
-          <Route path="/" element={<AllCourses />} />
+          <Route path="/" element={<Home user={user} />} />
+<Route path="/courses" element={<AllCourses />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/instructor" element={<InstructorDashboard />} />
@@ -122,8 +119,14 @@ function App() {
           <Route path="/admin/manage-courses" element={<ManageCourses />} />
         </Routes>
       </div>
+    </>
+  );
+}
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
-
 export default App;
