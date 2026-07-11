@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosConfig";
-
+import "../styles/courses.css";
 export default function AllCourses({ searchTerm = "" }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,212 +143,138 @@ const [loadingAI, setLoadingAI] = useState({});
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #f0f4ff, #e0e7ff)",
-        padding: "40px 20px",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: 30 }}>
-        All Courses
-      </h2>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "20px",
-          maxWidth: "1100px",
-          margin: "0 auto",
-        }}
-      >
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((c) => {
-            const isEnrolled =
-              user && c.studentsEnrolled?.includes(user.id);
-
-            return (
-              <div
-                key={c._id}
-                style={{
-                  background: getCardColor(c._id),
-                  borderRadius: "10px",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                  padding: "20px",
-                }}
-              >
-                <h3>{c.title}</h3>
-
-                <p>{c.description}</p>
-
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "#555",
-                    marginBottom: 10,
-                  }}
-                >
-                  Instructor:{" "}
-                  {c.instructor?.name ||
-                    c.instructor?.email ||
-                    "Unknown"}
-                </div>
-
-                {!isEnrolled ? (
-                  <>
-                    <p
-                      style={{
-                        color: "#666",
-                        fontStyle: "italic",
-                      }}
-                    >
-                      🔒 Resources available after enrollment.
-                    </p>
-
-                    {user?.role === "user" && (
-                      <button
-                        onClick={() => handleEnroll(c._id)}
-                        style={{
-                          background: "#2563eb",
-                          color: "white",
-                          border: "none",
-                          padding: "8px 12px",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Enroll
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p
-                      style={{
-                        color: "green",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      ✅ Enrolled
-                    </p>
-
-                    <h4>Resources</h4>
-
-                      {c.resources?.length > 0 ? (
-                        <div>
-                          {c.resources.map((resource, index) => {
-                            const key = `${c._id}-${index}`;
-
-                            return (
-                              <div
-                                key={index}
-                                style={{
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  padding: "12px",
-                                  marginBottom: "12px",
-                                  background: "#fff",
-                                }}
-                              >
-                                <a
-                                  href={resource.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{
-                                    display: "block",
-                                    marginBottom: "10px",
-                                    fontWeight: "bold",
-                                    textDecoration: "none",
-                                  }}
-                                >
-                                  📄 {resource.fileName}
-                                </a>
-
-                                <input
-                                  type="text"
-                                  placeholder="Ask AI about this PDF..."
-                                  value={questions[key] || ""}
-                                  onChange={(e) =>
-                                    setQuestions((prev) => ({
-                                      ...prev,
-                                      [key]: e.target.value,
-                                    }))
-                                  }
-                                  style={{
-                                    width: "100%",
-                                    padding: "8px",
-                                    marginBottom: "10px",
-                                    borderRadius: "6px",
-                                    border: "1px solid #ccc",
-                                  }}
-                                />
-
-                                <button
-                                  onClick={() => handleAskAI(c._id, index)}
-                                  disabled={loadingAI[key]}
-                                  style={{
-                                    background: "#2563eb",
-                                    color: "white",
-                                    border: "none",
-                                    padding: "8px 12px",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {loadingAI[key] ? "Thinking..." : "💬 Ask AI"}
-                                </button>
-
-                                {answers[key] && (
-                                  <div
-                                    style={{
-                                      marginTop: "12px",
-                                      background: "#f8fafc",
-                                      border: "1px solid #ddd",
-                                      borderRadius: "6px",
-                                      padding: "10px",
-                                      whiteSpace: "pre-wrap",
-                                    }}
-                                  >
-                                    <strong>🤖 SkillShare AI</strong>
-                                    <hr />
-                                    {answers[key]}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p>No resources uploaded yet.</p>
-                      )}
-                            
-
-                    <br />
-
-                    <button
-                      onClick={() => handleUnenroll(c._id)}
-                      style={{
-                        marginTop: 12,
-                        background: "#dc2626",
-                        color: "white",
-                        border: "none",
-                        padding: "8px 12px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Unenroll
-                    </button>
-                  </>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <p>No courses found.</p>
-        )}
-      </div>
+  <div className="courses-page">
+    <div className="courses-header">
+      <span className="courses-label">EXPLORE LEARNING</span>
+      <h1>Discover Courses</h1>
+      <p>
+        Explore courses, enroll and access intelligent learning resources.
+      </p>
     </div>
-  );
+
+    <div className="courses-grid">
+      {filteredCourses.length > 0 ? (
+        filteredCourses.map((c) => {
+          const isEnrolled =
+            user && c.studentsEnrolled?.includes(user.id);
+
+          return (
+            <div key={c._id} className="course-card">
+              <div className="course-card-number">COURSE</div>
+
+              <h3>{c.title}</h3>
+
+              <p className="course-description">
+                {c.description}
+              </p>
+
+              <div className="course-instructor">
+                Instructor:{" "}
+                {c.instructor?.name ||
+                  c.instructor?.email ||
+                  "Unknown"}
+              </div>
+
+              {!isEnrolled ? (
+                <>
+                  <p className="course-locked">
+                    Resources available after enrollment.
+                  </p>
+
+                  {user?.role === "user" && (
+                    <button
+                      onClick={() => handleEnroll(c._id)}
+                      className="course-primary-button"
+                    >
+                      Enroll
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="course-enrolled">
+                    Enrolled
+                  </p>
+
+                  <h4 className="resources-title">
+                    Resources
+                  </h4>
+
+                  {c.resources?.length > 0 ? (
+                    <div className="resources-list">
+                      {c.resources.map((resource, index) => {
+                        const key = `${c._id}-${index}`;
+
+                        return (
+                          <div
+                            key={index}
+                            className="resource-card"
+                          >
+                            <a
+                              href={resource.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="resource-link"
+                            >
+                              {resource.fileName}
+                            </a>
+
+                            <input
+                              type="text"
+                              placeholder="Ask AI about this PDF..."
+                              value={questions[key] || ""}
+                              onChange={(e) =>
+                                setQuestions((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.value,
+                                }))
+                              }
+                              className="resource-input"
+                            />
+
+                            <button
+                              onClick={() =>
+                                handleAskAI(c._id, index)
+                              }
+                              disabled={loadingAI[key]}
+                              className="course-primary-button"
+                            >
+                              {loadingAI[key]
+                                ? "Thinking..."
+                                : "Ask SkillShare AI"}
+                            </button>
+
+                            {answers[key] && (
+                              <div className="ai-answer">
+                                <strong>SkillShare AI</strong>
+                                <p>{answers[key]}</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="no-resources">
+                      No resources uploaded yet.
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => handleUnenroll(c._id)}
+                    className="course-danger-button"
+                  >
+                    Unenroll
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })
+      ) : (
+        <p className="no-courses">No courses found.</p>
+      )}
+    </div>
+  </div>
+);
 }

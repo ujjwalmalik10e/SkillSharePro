@@ -5,6 +5,7 @@ import {
   Route,
   Link,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AllCourses from "./pages/AllCourses";
@@ -19,6 +20,7 @@ import "./navbar.css";
 function AppContent() {
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
 const hideNavbar =
   location.pathname === "/login" ||
@@ -39,10 +41,10 @@ const hideNavbar =
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    alert("Logged out");
-  };
+  localStorage.removeItem("token");
+  setUser(null);
+  navigate("/");
+};
 
   return (
     <>
@@ -102,11 +104,7 @@ const hideNavbar =
 )}
       {/* Page content */}
       <div>
-        {user && (
-          <h2 style={{ color: "#333", marginBottom: "20px" }}>
-            Hello, {user.name || user.email}
-          </h2>
-        )}
+        
 
         <Routes>
           <Route path="/" element={<Home user={user} />} />
