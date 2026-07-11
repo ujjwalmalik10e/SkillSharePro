@@ -120,7 +120,13 @@ const [loadingAI, setLoadingAI] = useState({});
   }
 };
 
-  if (loading) return <div>Loading courses...</div>;
+  if (loading)
+  return (
+    <div className="courses-loading">
+      <div className="courses-loader" />
+      <p>Loading courses...</p>
+    </div>
+  );
   if (error) return <div style={{ color: "red" }}>Error: {error}</div>;
 
   const filteredCourses = courses.filter((c) =>

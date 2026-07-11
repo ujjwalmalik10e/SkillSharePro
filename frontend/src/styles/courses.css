@@ -219,3 +219,35 @@
 .no-courses {
   color: #71717a;
 }
+.courses-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+
+  background:
+    radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.18), transparent 28%),
+    radial-gradient(circle at 80% 75%, rgba(139, 92, 246, 0.18), transparent 30%),
+    #09090b;
+
+  color: #a1a1aa;
+}
+
+.courses-loader {
+  width: 45px;
+  height: 45px;
+
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+
+  animation: coursesSpin 0.8s linear infinite;
+}
+
+@keyframes coursesSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
