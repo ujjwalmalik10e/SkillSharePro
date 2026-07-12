@@ -1,7 +1,7 @@
 // src/pages/InstructorDashboard.js
 import { useEffect, useState } from "react";
 import api from "../api/axiosConfig";
-
+import "../styles/instructor.css";
 export default function InstructorDashboard() {
   const [courses, setCourses] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -95,207 +95,216 @@ const handlePdfUpload = async (courseId) => {
     }
   };
 
-  if (loading) return <div>Loading courses...</div>;
+  if (loading)
+  return (
+    <div className="instructor-loading">
+      <div className="instructor-loader" />
+      <p>Loading your workspace...</p>
+    </div>
+  );
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2 style={{ color: "#0a2752ff" }}>Instructor Dashboard</h2>
+  <div className="instructor-page">
+    <div className="instructor-header">
+      <div>
+        <p className="instructor-label">INSTRUCTOR WORKSPACE</p>
 
-      {/* CREATE COURSE BUTTON */}
+        <h1>Instructor Dashboard</h1>
+
+        <p className="instructor-subtitle">
+          Create courses, manage resources and guide your students.
+        </p>
+      </div>
+
       <button
         onClick={() => setShowForm(!showForm)}
-        style={{
-          backgroundColor: "#0a2752ff",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          padding: "10px 16px",
-          marginTop: 10,
-          marginBottom: 20,
-          cursor: "pointer",
-          transition: "0.2s",
-        }}
-        onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-        onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+        className="instructor-create-button"
       >
-        {showForm ? "Cancel" : "Create Course"}
+        {showForm ? "Cancel" : "+ Create Course"}
       </button>
+    </div>
 
-      {/* COURSE CREATION FORM */}
-      {showForm && (
-        <form
-          onSubmit={handleCreateCourse}
-          style={{
-            backgroundColor: "#f4f6fb",
-            padding: 20,
-            borderRadius: 10,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-            marginBottom: 30,
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Course Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-            }}
-          />
-          <textarea
-            placeholder="Course Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "10px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              marginBottom: "10px",
-              height: "80px",
-            }}
-          ></textarea>
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#0a2752ff",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              padding: "8px 14px",
-              cursor: "pointer",
-              transition: "0.2s",
-            }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-          >
-            Add Course
-          </button>
-        </form>
-      )}
-
-      {/* NO COURSES */}
-      {courses.length === 0 && (
-        <div style={{ color: "#666", fontStyle: "italic" }}>
-          No courses created yet.
+    {showForm && (
+      <form
+        onSubmit={handleCreateCourse}
+        className="create-course-form"
+      >
+        <div className="create-form-heading">
+          <p>NEW COURSE</p>
+          <h2>Create a course</h2>
         </div>
-      )}
 
-      {/* COURSE LIST */}
-      <div style={{ display: "grid", gap: "20px", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))" }}>
-        {courses.map((course) => (
+        <input
+          type="text"
+          placeholder="Course Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        <textarea
+          placeholder="Course Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+
+        <button type="submit">
+          Add Course
+        </button>
+      </form>
+    )}
+
+    {courses.length === 0 ? (
+      <div className="instructor-empty">
+        <span>01</span>
+        <h2>No courses created yet.</h2>
+        <p>
+          Create your first course and start sharing learning resources.
+        </p>
+      </div>
+    ) : (
+      <div className="instructor-courses-grid">
+        {courses.map((course, courseIndex) => (
           <div
             key={course._id}
-            style={{
-              backgroundColor: "#f9fafc",
-              padding: 20,
-              borderRadius: 10,
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-              transition: "0.2s",
-            }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.03)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+            className="instructor-course-card"
           >
-            <h3 style={{ color: "#0a2752ff", marginBottom: "8px" }}>
-              {course.title}
-            </h3>
-            <p style={{ color: "#333", marginBottom: "12px" }}>
+            <div className="instructor-course-top">
+              <span className="course-index">
+                {String(courseIndex + 1).padStart(2, "0")}
+              </span>
+
+              <span className="course-status">
+                ACTIVE
+              </span>
+            </div>
+
+            <h2>{course.title}</h2>
+
+            <p className="instructor-course-description">
               {course.description}
             </p>
-            <input
-              
-              type="file"
-              accept=".pdf"
-              onChange={(e) =>
-                setSelectedFiles((prev) => ({
-                  ...prev,
-                  [course._id]: e.target.files[0],
-                }))
-              }
-            />
-            <button onClick={() => handlePdfUpload(course._id)}>
-              Upload PDF
-            </button>
-            <h4>Resources</h4>
 
-            {!course.resources || course.resources.length === 0 ? (
-              <p>No resources uploaded.</p>
-            ) : (
-              <ul>
-                {course.resources.map((resource, index) => (
-                  <li key={index}>
-                    <a
-                      href={resource.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {resource.fileName}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <h4 style={{ color: "#0a2752ff", fontSize: "16px", marginBottom: "8px" }}>
-              Enrolled Students:
-            </h4>
+            <div className="dashboard-divider" />
 
-            {course.studentsEnrolled.length === 0 ? (
-              <p style={{ color: "#666", fontStyle: "italic" }}>No students enrolled.</p>
-            ) : (
-              <ul style={{ paddingLeft: "20px" }}>
-                {course.studentsEnrolled.map((student) => (
-                  <li key={student._id} style={{ marginBottom: "8px" }}>
-                    {student.name || student.email}
-                    <button
-                      onClick={() => handleUnenroll(course._id, student._id)}
-                      style={{
-                        marginLeft: "10px",
-                        backgroundColor: "#d9534f",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                        transition: "0.2s",
-                      }}
-                      onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-                      onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                    >
-                      Unenroll
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <button
-              onClick={() => handleDeleteCourse(course._id)}
-              style={{
-                backgroundColor: "#e74c3c",
-                color: "white",
-                border: "none",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                marginTop: "10px",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-            >
-              Delete Course
-            </button>
+            <div className="dashboard-section">
+              <p className="dashboard-section-label">
+                COURSE RESOURCES
+              </p>
 
+              <div className="pdf-upload-area">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) =>
+                    setSelectedFiles((prev) => ({
+                      ...prev,
+                      [course._id]: e.target.files[0],
+                    }))
+                  }
+                />
+
+                <button
+                  onClick={() =>
+                    handlePdfUpload(course._id)
+                  }
+                >
+                  Upload PDF
+                </button>
+              </div>
+
+              {!course.resources ||
+              course.resources.length === 0 ? (
+                <p className="dashboard-muted">
+                  No resources uploaded.
+                </p>
+              ) : (
+                <div className="instructor-resources">
+                  {course.resources.map(
+                    (resource, index) => (
+                      <a
+                        key={index}
+                        href={resource.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="instructor-resource"
+                      >
+                        <span className="resource-pdf-icon">
+                          PDF
+                        </span>
+
+                        <span>{resource.fileName}</span>
+                      </a>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="dashboard-divider" />
+
+            <div className="dashboard-section">
+              <p className="dashboard-section-label">
+                ENROLLED STUDENTS
+              </p>
+
+              {course.studentsEnrolled.length === 0 ? (
+                <p className="dashboard-muted">
+                  No students enrolled.
+                </p>
+              ) : (
+                <div className="student-list">
+                  {course.studentsEnrolled.map(
+                    (student) => (
+                      <div
+                        key={student._id}
+                        className="student-row"
+                      >
+                        <div className="student-info">
+                          <span className="student-avatar">
+                            {(student.name ||
+                              student.email ||
+                              "S")[0].toUpperCase()}
+                          </span>
+
+                          <span>
+                            {student.name ||
+                              student.email}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            handleUnenroll(
+                              course._id,
+                              student._id
+                            )
+                          }
+                          className="student-remove-button"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="course-danger-zone">
+              <button
+                onClick={() =>
+                  handleDeleteCourse(course._id)
+                }
+              >
+                Delete Course
+              </button>
+            </div>
           </div>
         ))}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 }
